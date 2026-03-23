@@ -44,7 +44,7 @@ def write_settings(data: dict) -> None:
 
 
 def merge_settings(updates: dict) -> dict:
-    """Read → merge → write in a single lock acquisition to avoid TOCTOU."""
+    """Read > merge > write in a single lock acquisition to avoid TOCTOU."""
     with filelock.FileLock(LOCK_FILE):
         current = (
             json.loads(SETTINGS_FILE.read_text())
@@ -116,11 +116,6 @@ def next_track():
     return {"filename": tracks[next_idx].name, "index": next_idx, "total": len(tracks)}
 
 
-# ---------------------------------------------------------------------------
-# Settings
-# ---------------------------------------------------------------------------
-
-
 @app.get("/api/settings")
 def get_settings():
     return read_settings()
@@ -136,8 +131,5 @@ async def update_settings(request: Request):
     return merge_settings(body)
 
 
-# ---------------------------------------------------------------------------
-# Static files — mount LAST so API routes take priority
-# ---------------------------------------------------------------------------
-
+# Mount last to ensure no api paths blocked
 app.mount("/", StaticFiles(directory=str(CLIENT_DIR), html=True), name="client")
