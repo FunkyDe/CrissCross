@@ -15,7 +15,12 @@
         <div id="track-meta"></div>
       </div>
 
-      <audio controls id="audio" preload="auto"></audio>
+      <audio id="audio" preload="auto"></audio>
+
+      <div id="seek-row">
+        <label for="seek" id="seek-label">0:00 / 0:00</label>
+        <input type="range" id="seek" min="0" max="1" step="0.1" value="0" />
+      </div>
 
       <div id="controls">
         <button id="btn-play" disabled>Play</button>

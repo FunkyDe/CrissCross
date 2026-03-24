@@ -1,4 +1,6 @@
 const audio = document.getElementById("audio");
+const seekLabel = document.getElementById("seek-label");
+const seekBar = document.getElementById("seek");
 const btnPlay = document.getElementById("btn-play");
 const btnNext = document.getElementById("btn-next");
 const volumeSlider = document.getElementById("volume");
@@ -74,6 +76,41 @@ function setControlsEnabled(enabled) {
   btnNext.disabled = !enabled;
 }
 
+function setSeekLabel() {
+  const currentTime = Math.round(audio.currentTime);
+  const audioDuration = Math.round(audio.duration);
+
+  // bail to prevent NaNs
+  if (isNaN(audioDuration)) return;
+
+  const fmt = new Intl.DurationFormat("en", {
+    style: "digital",
+    hoursDisplay: "auto",
+  });
+
+  // Lambda hack to trim leading minutes (03:12 => 3:12)
+  // Intl.DurationFormat does not allow disable minute padding
+  const trimLeadingMinutes = (durationText) => {
+    return durationText[0] == "0" ? durationText.slice(1) : durationText;
+  };
+  seekLabel.textContent =
+    trimLeadingMinutes(
+      fmt.format({
+        hours: Math.floor(currentTime / 3600),
+        minutes: Math.floor((currentTime % 3600) / 60),
+        seconds: currentTime % 60,
+      }),
+    ) +
+    " / " +
+    trimLeadingMinutes(
+      fmt.format({
+        hours: Math.floor(audioDuration / 3600),
+        minutes: Math.floor((audioDuration % 3600) / 60),
+        seconds: audioDuration % 60,
+      }),
+    );
+}
+
 btnPlay.addEventListener("click", () => {
   if (audio.paused) {
     audio.play();
@@ -93,22 +130,22 @@ audio.addEventListener("pause", () => {
   btnPlay.textContent = "Play";
 });
 
+audio.addEventListener("loadedmetadata", () => {
+  seekBar.max = audio.duration;
+  seekBar.value = 0;
+  setSeekLabel();
+});
+seekBar.addEventListener("change", () => {
+  audio.currentTime = seekBar.value;
+  setSeekLabel();
+});
+audio.addEventListener("timeupdate", () => {
+  setSeekLabel();
+});
+
 audio.addEventListener("error", () => {
   setMessage(`Playback error — check that the file format is supported.`);
 });
-
-async function initVolume() {
-  try {
-    const settings = await apiFetch("/api/settings");
-    const vol = settings.volume ?? 1;
-    audio.volume = vol;
-    volumeSlider.value = vol;
-    volumeLabel.textContent = `${Math.round(vol * 100)}%`;
-  } catch {
-    // default to 100%
-    audio.volume = 1;
-  }
-}
 
 volumeSlider.addEventListener("input", () => {
   const vol = parseFloat(volumeSlider.value);
@@ -130,6 +167,19 @@ volumeSlider.addEventListener("change", () => {
 
 function setMessage(text) {
   message.textContent = text;
+}
+
+async function initVolume() {
+  try {
+    const settings = await apiFetch("/api/settings");
+    const vol = settings.volume ?? 1;
+    audio.volume = vol;
+    volumeSlider.value = vol;
+    volumeLabel.textContent = `${Math.round(vol * 100)}%`;
+  } catch {
+    // default to 100%
+    audio.volume = 1;
+  }
 }
 
 initVolume();
