@@ -81,7 +81,7 @@ function setSeekLabel() {
   const audioDuration = Math.round(audio.duration);
 
   // bail to prevent NaNs
-  if (isNaN(audioDuration)) return;
+  if (Number.isNaN(audioDuration)) return;
 
   const fmt = new Intl.DurationFormat("en", {
     style: "digital",
