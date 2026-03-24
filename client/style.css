@@ -67,9 +67,10 @@ body {
   display: flex;
   gap: 0.75rem;
   justify-content: center;
+  align-items: center;
 }
 
-button {
+#controls button {
   background: #2a2a2a;
   color: #eee;
   border: 1px solid #333;
@@ -79,14 +80,14 @@ button {
   cursor: pointer;
   transition: background 0.15s;
 }
-button:hover {
+#controls button:hover {
   background: #333;
 }
-button:disabled {
+#controls button:disabled {
   opacity: 0.35;
   cursor: default;
 }
-button#btn-play {
+#controls button#btn-play {
   min-width: 90px;
 }
 #seek-label {
@@ -117,6 +118,26 @@ button#btn-play {
   width: 35px;
   height: auto;
   text-align: right;
+}
+
+#mute {
+  fill: #888;
+}
+#btn-mute {
+  background-color: #1a1a1a;
+  border: 0px;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: 3rem;
+  height: 3rem;
+}
+#btn-mute:hover {
+  background: #3a3a3a;
+}
+
+.hidden {
+  opacity: 0;
 }
 
 #message {

@@ -5,6 +5,9 @@ const btnPlay = document.getElementById("btn-play");
 const btnNext = document.getElementById("btn-next");
 const volumeSlider = document.getElementById("volume");
 const volumeLabel = document.getElementById("volume-label");
+const btnMute = document.getElementById("btn-mute");
+const muteIcon = document.getElementById("mute-icon");
+const muteIconMuted = document.getElementById("mute-icon-muted");
 const trackName = document.getElementById("track-name");
 const trackMeta = document.getElementById("track-meta");
 const message = document.getElementById("message");
@@ -160,39 +163,53 @@ audio.addEventListener("error", () => {
   setMessage(`Playback error — check that the file format is supported.`);
 });
 
+function toggleMute() {
+  audio.muted = !audio.muted;
+  muteIcon.classList.toggle("hidden");
+  muteIconMuted.classList.toggle("hidden");
+  apiFetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ muted: audio.muted }),
+  }).catch(() => {});
+}
+
+btnMute.addEventListener("click", toggleMute);
+
 volumeSlider.addEventListener("input", () => {
   const vol = parseFloat(volumeSlider.value);
   audio.volume = vol;
   volumeLabel.textContent = `${Math.round(vol * 100)}%`;
 });
 
-let volumeSaveTimer;
 volumeSlider.addEventListener("change", () => {
-  clearTimeout(volumeSaveTimer);
-  volumeSaveTimer = setTimeout(() => {
-    apiFetch("/api/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ volume: parseFloat(volumeSlider.value) }),
-    }).catch(() => {});
-  }, 300);
+  apiFetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ volume: parseFloat(volumeSlider.value) }),
+  }).catch(() => {});
 });
 
 function setMessage(text) {
   message.textContent = text;
 }
 
-async function initVolume() {
+async function initPlayer() {
   try {
     const settings = await apiFetch("/api/settings");
     const vol = settings.volume ?? 1;
     audio.volume = vol;
     volumeSlider.value = vol;
     volumeLabel.textContent = `${Math.round(vol * 100)}%`;
+    audio.muted = settings.muted ?? false;
+    if (audio.muted) {
+      muteIcon.classList.toggle("hidden");
+      muteIconMuted.classList.toggle("hidden");
+    }
   } catch {
     // default to 100%
     audio.volume = 1;
   }
 }
 
-initVolume();
+initPlayer();
