@@ -89,6 +89,10 @@ button:disabled {
 button#btn-play {
   min-width: 90px;
 }
+#seek-label {
+  font-size: 0.8rem;
+  color: #888;
+}
 
 #volume-row,
 #seek-row {
@@ -103,9 +107,16 @@ button#btn-play {
   flex: 1;
   cursor: pointer;
 }
-
 #volume {
   accent-color: #6fcf6f;
+}
+#seek {
+  accent-color: #f03;
+}
+#volume-label {
+  width: 35px;
+  height: auto;
+  text-align: right;
 }
 
 #message {

@@ -12,6 +12,7 @@ const statusBadge = document.getElementById("server-status");
 
 let serverAlive = false;
 let trackLoaded = false;
+let seekHeld = false;
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(path, options);
@@ -76,8 +77,8 @@ function setControlsEnabled(enabled) {
   btnNext.disabled = !enabled;
 }
 
-function setSeekLabel() {
-  const currentTime = Math.round(audio.currentTime);
+function setSeekLabel(seekTime) {
+  const currentTime = Math.round(seekTime);
   const audioDuration = Math.round(audio.duration);
 
   // bail to prevent NaNs
@@ -133,14 +134,26 @@ audio.addEventListener("pause", () => {
 audio.addEventListener("loadedmetadata", () => {
   seekBar.max = audio.duration;
   seekBar.value = 0;
-  setSeekLabel();
+  setSeekLabel(0);
 });
 seekBar.addEventListener("change", () => {
   audio.currentTime = seekBar.value;
-  setSeekLabel();
+  setSeekLabel(seekBar.value);
+});
+seekBar.addEventListener("input", () => {
+  setSeekLabel(seekBar.value);
+});
+seekBar.addEventListener("pointerdown", () => {
+  seekHeld = true;
+});
+seekBar.addEventListener("pointerup", () => {
+  seekHeld = false;
 });
 audio.addEventListener("timeupdate", () => {
-  setSeekLabel();
+  if (!seekHeld) {
+    seekBar.value = audio.currentTime;
+    setSeekLabel(seekBar.value);
+  }
 });
 
 audio.addEventListener("error", () => {
